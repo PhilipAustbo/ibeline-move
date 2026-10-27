@@ -76,6 +76,8 @@ Serviceworker bruker nettverk først og lokale kopier uten nett. Ved større opp
 
 ## Pushvarslinger · oppsett
 
+Produksjon: `https://ibeline-reminders.ibeline-reminders.workers.dev`. Appen ligger fortsatt på GitHub Pages. Cloudflare-koblingen i Codex er et separat utviklingsverktøy; varslingstjenesten er ikke avhengig av at Codex er åpent.
+
 1. Opprett en Cloudflare-konto. Fra `backend/`, kjør `npm ci` og `npx wrangler login --scopes account:read user:read workers:write`.
 2. Publiser med `npm run deploy` fra `backend/`. Worker opprettes med navnet `ibeline-reminders`; den krever ingen domeneendring.
 3. Fra prosjektroten: `node backend/initialize-keys.js https://<worker-url>.workers.dev`. Dette lager VAPID-nøkler én gang og sender dem direkte til Cloudflares secret-lager. Nøkler skrives ikke til disk, Git eller konsollen. Eksisterende nøkler beholdes ved senere kjøringer.

@@ -19,10 +19,10 @@ for (const size of [180,192,512]) {
       const sums=[0,0,0];
       for(const dy of [.25,.75]) for(const dx of [.25,.75]) {
         const px=(x+dx)*192/size, py=(y+dy)*192/size;
-        let c=[248,226,232];
+        let c=[255,242,189];
         const ellipse=(cx,cy,rx,ry)=>((px-cx)/rx)**2+((py-cy)/ry)**2<=1;
-        if(ellipse(96,67,18,34)||ellipse(96,125,18,34)||ellipse(67,96,34,18)||ellipse(125,96,34,18)) c=[189,83,120];
-        if(ellipse(96,96,17,17)) c=[255,247,237];
+        if(ellipse(96,67,18,34)||ellipse(96,125,18,34)||ellipse(67,96,34,18)||ellipse(125,96,34,18)) c=[186,219,242];
+        if(ellipse(96,96,17,17)) c=[244,189,210];
         c.forEach((v,i)=>sums[i]+=v);
       }
       const index=row+1+x*4; sums.forEach((v,i)=>raw[index+i]=Math.round(v/4));raw[index+3]=255;

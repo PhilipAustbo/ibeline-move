@@ -121,7 +121,7 @@ document.addEventListener('click', event => {
     toast(entry.completed?'En liten seier til deg. Så fint gjort, Ibeline! ♡':'Registreringen er angret.');
     if (entry.completed && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const confetti=document.createElement('div'); confetti.className='confetti'; confetti.setAttribute('aria-hidden','true');
-      confetti.innerHTML=Array.from({length:24},(_,i)=>`<i style="--x:${Math.random()*100}%;--r:${Math.random()*500}deg;--d:${Math.random()*.4}s;--c:${['#d96c96','#ecd28e','#94ad9b','#c1a5d5'][i%4]}"></i>`).join(''); document.body.append(confetti); setTimeout(()=>confetti.remove(),2000);
+      confetti.innerHTML=Array.from({length:24},(_,i)=>`<i style="--x:${Math.random()*100}%;--r:${Math.random()*500}deg;--d:${Math.random()*.4}s;--c:${['#f6df86','#badbf2','#f4bdd2','#fff2bd'][i%4]}"></i>`).join(''); document.body.append(confetti); setTimeout(()=>confetti.remove(),2000);
     }
   }
   if (target.dataset.claim) { const value=Number(target.dataset.claim); if (stats(state).total>=value && REWARDS.some(r=>r.target===value) && !state.claimed.includes(value)) { state.claimed.push(value); save(); render(); toast('Den lille seieren er feiret. Kos deg! ♡'); } }

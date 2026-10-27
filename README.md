@@ -1,6 +1,6 @@
 # Ibeline · bevegelse & balanse
 
-En personlig, mobilvennlig treningsapp i rosa og hvitt. Frontend er bygget med HTML, CSS og JavaScript uten rammeverk og publiseres med GitHub Pages. Valgfrie pushvarslinger bruker en separat Cloudflare Worker med Durable Objects.
+En personlig, mobilvennlig treningsapp med butter yellow som hovedfarge, baby blue som støttefarge og pretty pink som aksent, på hvit bakgrunn. Frontend er bygget med HTML, CSS og JavaScript uten rammeverk og publiseres med GitHub Pages. Valgfrie pushvarslinger bruker en separat Cloudflare Worker med Durable Objects.
 
 ## Funksjoner
 

@@ -1,5 +1,5 @@
-const CACHE = 'ibeline-v4-reminders-update';
-const ASSETS = ['./', './index.html', './styles.css', './styles.css?v=reminders-1', './app.js', './app.js?v=reminders-1', './planner.js', './notifications.js', './push-config.js', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png', './manifest.webmanifest'];
+const CACHE = 'ibeline-v5-butter-blue-pink';
+const ASSETS = ['./', './index.html', './styles.css', './styles.css?v=butter-blue-pink-1', './app.js', './app.js?v=butter-blue-pink-1', './planner.js', './notifications.js', './push-config.js', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png', './manifest.webmanifest'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('ibeline-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', event => {

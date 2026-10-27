@@ -1,0 +1,14 @@
+{
+  "name": "ibeline-reminders",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://philipaustbo.github.io",
+    "APP_URL": "https://philipaustbo.github.io/ibeline-move/"
+  },
+  "durable_objects": { "bindings": [{"name":"DEVICES","class_name":"ReminderDevice"}] },
+  "migrations": [{"tag":"v1","new_sqlite_classes":["ReminderDevice"]}]
+}

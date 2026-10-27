@@ -1,6 +1,6 @@
 # Ibeline · bevegelse & balanse
 
-En personlig, mobilvennlig treningsapp i rosa og hvitt. Bygget med HTML, CSS og JavaScript, uten rammeverk, pakkedependencies eller server. Publiseres med GitHub Pages.
+En personlig, mobilvennlig treningsapp i rosa og hvitt. Frontend er bygget med HTML, CSS og JavaScript uten rammeverk og publiseres med GitHub Pages. Valgfrie pushvarslinger bruker en separat Cloudflare Worker med Durable Objects.
 
 ## Funksjoner
 
@@ -54,6 +54,8 @@ npm run build
 
 `dist/` inneholder alle filer som skal publiseres. `tests/responsive.html` er en lokal testside med en 390 piksler bred mobilramme og blir ikke publisert.
 
+Kjør `npm ci --prefix backend` før testene; varslingstestene bruker biblioteket `web-push`. GitHub-workflowen installerer dette automatisk.
+
 ## GitHub Pages
 
 Workflowen `.github/workflows/pages.yml` kjører tester, bygger appen og publiserer `dist/` ved push til `main`. Velg **GitHub Actions** som kilde i repositoryets **Settings → Pages**. Alle appstier er relative og fungerer under `/ibeline-move/`.
@@ -64,8 +66,24 @@ Workflowen `.github/workflows/pages.yml` kjører tester, bygger appen og publise
 
 ## Lagring og personvern
 
-Det er ingen konto, database, analyseverktøy eller synkronisering mellom enheter. Fremgangen lagres i `localStorage` under `ibeline-move-v1` på enheten og nettadressen hun bruker. Treningshistorikk lastes ikke opp til GitHub. Den publiserte appen og kildekoden er offentlig tilgjengelig. Bruk «Last ned sikkerhetskopi» under Min side før du sletter nettleserdata eller bytter enhet.
+Det er ingen brukerkonto, analyseverktøy eller synkronisering av treningshistorikk mellom enheter. Fremgangen lagres i `localStorage` under `ibeline-move-v1` på enheten og nettadressen hun bruker. Treningshistorikk lastes ikke opp til GitHub. Den publiserte appen og kildekoden er offentlig tilgjengelig. Bruk «Last ned sikkerhetskopi» under Min side før du sletter nettleserdata eller bytter enhet.
+
+Pushvarslinger er frivillige. Ved aktivering lagres et teknisk pushabonnement, klokkeslett, tidssone og et lite utdrag av øktvalg/fullføring (i går til 14 dager frem) i en Cloudflare Durable Object. Øvelser, vekter og den øvrige historikken sendes ikke. Hver enhet identifiseres av en tilfeldig 256-bits nøkkel som bare lagres på telefonen; serveren bruker en hash av nøkkelen som lagringsnavn. Varslingsnøkkelen følger ikke med i sikkerhetskopien. Avslåing sletter serverdata og alarm, og avregistrerer abonnementet på telefonen. Ved manglende nett forsøkes sletting igjen når appen er åpen med nett. Hvis nettleserdata slettes uten at varslinger slås av først, kan serveren først rydde abonnementet når pushtjenesten melder det ugyldig.
 
 Importer kontrolleres for gyldige datoer, tillatte øktvalg, øvelser og belønninger. Gjenoppretting viser en bekreftelse før lokal fremgang erstattes.
 
 Serviceworker bruker nettverk først og lokale kopier uten nett. Ved større oppdateringer endres cache-versjonen i `sw.js`.
+
+## Pushvarslinger · oppsett
+
+1. Opprett en Cloudflare-konto. Fra `backend/`, kjør `npm ci` og `npx wrangler login --scopes account:read user:read workers:write`.
+2. Publiser med `npm run deploy` fra `backend/`. Worker opprettes med navnet `ibeline-reminders`; den krever ingen domeneendring.
+3. Fra prosjektroten: `node backend/initialize-keys.js https://<worker-url>.workers.dev`. Dette lager VAPID-nøkler én gang og sender dem direkte til Cloudflares secret-lager. Nøkler skrives ikke til disk, Git eller konsollen. Eksisterende nøkler beholdes ved senere kjøringer.
+4. Sett den offentlige Worker-URL-en i `push-config.js`, bygg og publiser frontend som vanlig. Worker-URL-en er offentlig; private signeringsnøkler skal aldri inn i frontend eller repositoryet.
+5. Åpne appen fra telefonens hjemskjerm → Min side → velg klokkeslett → Aktiver varslinger → tillat. På iPhone kreves iOS 16.4+. Bruk «Send et testvarsel» for å kontrollere levering på selve telefonen.
+
+Én Durable Object per enhet lagrer preferanser og planlegger neste daglige alarm. Tiden følger telefonens tidssone, som oppdateres når appen åpnes; sommer- og vintertid håndteres. Alarmen sender bare ved en treningsøkt som ikke er registrert fullført, og søndag bare hvis løping er valgt. Fredag og andre hviledager hoppes over. Midlertidige leveringsfeil prøves igjen inntil tre ganger med ti minutters mellomrom; varsler sendes ikke mer enn to timer etter valgt tid. Push har 30 minutters TTL, og leveringen er ikke en garanti om nøyaktig klokkeslett.
+
+Endringer synkroniseres når appen er åpen og på nett. Registreres en økt uten nett, kan tjenesten fremdeles sende den gamle påminnelsen inntil fullføringen er synkronisert. Samtidige oppdateringer sendes i rekkefølge. Pushtjenestene Apple, Google, Mozilla og Microsoft er de eneste tillatte leveringsvertene, og omdirigeringer følges ikke.
+
+`npm run check --prefix backend` kontrollerer Cloudflare-bundlingen uten å publisere. Backend-endringer publiseres separat med `npm run deploy --prefix backend`; GitHub-workflowen publiserer bare frontend. Etter første oppsett må ende-til-ende-levering bekreftes med et testvarsel på telefonen. Browser-tester i en innfelt nettleser bekrefter ikke låseskjermlevering på iPhone.

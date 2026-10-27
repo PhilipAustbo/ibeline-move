@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { options, recommend, stats, dateKey, addDays, monday, validState, EXERCISES } from '../planner.js';
+import { options, recommend, stats, dateKey, addDays, monday, validState, EXERCISES, strengthWorkout, STRENGTH_PLANS } from '../planner.js';
 const make = (days = {}) => ({ version: 1, startDate: '2026-10-19', days, claimed: [] });
 const done = (type, exercises = []) => ({ type, completed: true, exercises });
 test('ukeplanen har riktige valg og torsdag starter med ballett', () => {
@@ -54,4 +54,45 @@ test('backup-validering avviser feil dager, ugyldige øvelser og uferdig styrke'
   assert.equal(validState(make({'2026-02-30':done('run')})),false);
   const s=make();s.claimed=['<script>'];assert.equal(validState(s),false);
   assert.equal(validState(make({'2026-10-21':done('strength',EXERCISES.map(e=>e.id))})),true);
+});
+test('alle nye økter har én hovedøvelse, to tillegg, bryst, rygg og tre mageøvelser', () => {
+  for (const plan of STRENGTH_PLANS) {
+    const s=make({'2026-10-21':{type:'strength',completed:false,exercises:[],workoutId:plan.id}});
+    const workout=strengthWorkout('2026-10-21',s);
+    const count=group=>workout.exercises.filter(e=>e.group.startsWith(group)).length;
+    assert.equal(count('Hovedøvelse'),1);assert.equal(count('Tillegg'),2);assert.equal(count('Overkropp · bryst'),1);
+    assert.ok([1,2].includes(count('Overkropp · rygg')));assert.equal(count('Mage'),3);
+    assert.equal(new Set(workout.exercises.map(e=>e.id)).size,workout.exercises.length);
+  }
+});
+test('rotasjon følger gjennomførte styrkeøkter og hopper ikke over en økt som ble droppet', () => {
+  const s=make();
+  assert.equal(strengthWorkout('2026-10-21',s).id,'strength-a-v1');
+  assert.equal(strengthWorkout('2026-10-24',s).id,'strength-a-v1');
+  s.days['2026-10-21']={...done('strength',STRENGTH_PLANS[0].exerciseIds),workoutId:'strength-a-v1'};
+  assert.equal(strengthWorkout('2026-10-24',s).id,'strength-b-v1');
+  s.days['2026-10-22']={...done('strength',STRENGTH_PLANS[1].exerciseIds),workoutId:'strength-b-v1'};
+  assert.equal(strengthWorkout('2026-10-24',s).id,'strength-c-v1');
+  assert.equal(validState(s),true);
+});
+test('fremtidige standardøkter forhåndsviser A, B, C', () => {
+  const s=make();
+  assert.equal(strengthWorkout('2026-10-28',s,'2026-10-27').id,'strength-a-v1');
+  assert.equal(strengthWorkout('2026-11-04',s,'2026-10-27').id,'strength-b-v1');
+  assert.equal(strengthWorkout('2026-11-11',s,'2026-10-27').id,'strength-c-v1');
+});
+test('påbegynt økt og gammel historikk beholder øvelsene sine', () => {
+  const s=make({'2026-10-21':{type:'strength',completed:false,exercises:['hip-thrust'],workoutId:'strength-b-v1'}});
+  assert.equal(strengthWorkout('2026-10-21',s).id,'strength-b-v1');assert.equal(validState(s),true);
+  s.days['2026-10-21']={type:'strength',completed:false,exercises:['squat']};
+  assert.equal(strengthWorkout('2026-10-21',s).id,'legacy');assert.equal(validState(s),true);
+  s.days['2026-10-21']=done('strength',EXERCISES.map(e=>e.id));
+  assert.equal(validState(s),true);assert.equal(strengthWorkout('2026-10-21',s).exercises.length,6);
+});
+test('sikkerhetskopier av nye økter krever akkurat øvelsene i den lagrede planen', () => {
+  const s=make({'2026-10-21':{...done('strength',STRENGTH_PLANS[0].exerciseIds),workoutId:'strength-a-v1'}});
+  assert.equal(validState(s),true);
+  s.days['2026-10-21'].exercises=s.days['2026-10-21'].exercises.slice(1);assert.equal(validState(s),false);
+  s.days['2026-10-21'].completed=false;s.days['2026-10-21'].exercises=['hip-thrust'];assert.equal(validState(s),false);
+  s.days['2026-10-21'].workoutId='unknown';assert.equal(validState(s),false);
 });

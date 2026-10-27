@@ -1,4 +1,4 @@
-import { TYPES, EXERCISES, REWARDS, dateKey, parseDate, addDays, monday, options, recommend, planned, required, stats, validState } from './planner.js';
+import { TYPES, REWARDS, strengthWorkout, dateKey, parseDate, addDays, monday, options, recommend, planned, required, stats, validState } from './planner.js';
 
 const STORAGE = 'ibeline-move-v1';
 let state = { version: 1, startDate: dateKey(), days: {}, claimed: [] };
@@ -50,7 +50,9 @@ function toast(message) { const el = document.querySelector('#toast'); el.textCo
 function editable(key) { return key >= state.startDate && key <= dateKey(); }
 function dayEntry(key) {
   if (!state.days[key]) state.days[key] = { type: planned(key, state).type, completed: false, exercises: [] };
-  return state.days[key];
+  const entry = state.days[key];
+  if (entry.type === 'strength' && !entry.workoutId) entry.workoutId = strengthWorkout(key, state).id;
+  return entry;
 }
 function nav() {
   return [['home', 'home', 'Oversikt'], ['calendar', 'calendar', 'Kalender'], ['rewards', 'gift', 'Mine belønninger'], ['settings', 'heart', 'Min side']].map(([id, img, label]) => `<button class="nav-item ${page === id ? 'active' : ''}" data-page="${id}" ${page === id ? 'aria-current="page"' : ''}>${icon(img)}<span>${label}</span>${page === id ? '<i></i>' : ''}</button>`).join('');
@@ -91,8 +93,9 @@ function settings() {
 function workout(key, reopen = true) {
   activeDate = key;
   const rec = recommend(key, state), selected = planned(key, state).type, type = TYPES[selected], entry = state.days[key], done = !!entry?.completed;
+  const strength = strengthWorkout(key, state), exercises = strength.exercises;
   const checked = entry?.exercises || [], canEdit = editable(key), canPlan = key >= state.startDate;
-  dialog.innerHTML = `<div class="dialog-header"><span class="eyebrow">${format(key,{weekday:'long', day:'numeric', month:'long'})}</span><button class="icon-button" data-close aria-label="Lukk økten">${icon('close')}</button></div><span class="dialog-activity-icon ${type.color}">${icon(type.icon)}</span><h2 id="dialog-title">${type.name}</h2><p class="dialog-caption">${type.caption}</p>${options(key).length > 1 ? `<div class="choice-label">Hva har du lyst til?</div><div class="choices" role="group" aria-label="Velg økt">${options(key).map(t=>`<button class="choice ${selected===t?'selected':''}" data-choice="${t}" ${done || !canPlan ? 'disabled':''}>${icon(TYPES[t].icon)}<span>${TYPES[t].name}${rec.type===t ? '<small>Anbefalt</small>':''}</span>${selected===t?icon('check'):''}</button>`).join('')}</div><p class="recommendation">${icon('sparkles')}${rec.reason}</p>`:''}<p class="workout-detail">${type.detail}</p>${selected==='strength' ? `<div class="exercise-heading"><h3>Din økt</h3><span>${checked.length} av ${EXERCISES.length} øvelser</span></div><div class="progress"><span style="width:${checked.length/EXERCISES.length*100}%"></span></div><div class="exercise-list">${EXERCISES.map((e,i)=>`<label class="exercise ${checked.includes(e.id)?'checked':''}"><input type="checkbox" data-exercise="${e.id}" ${checked.includes(e.id)?'checked':''} ${!canEdit?'disabled':''} /><span class="custom-check">${icon('check')}</span><span class="exercise-info"><strong>${e.name}</strong><span>${e.note}</span></span><span class="sets">${e.sets}</span></label>`).join('')}</div>`:''}${!canEdit ? `<p class="notice">${key>dateKey()?'Du kan planlegge nå og krysse av når dagen kommer.':'Denne dagen er før du begynte å bruke appen.'}</p>` : ''}${selected !== 'rest' ? `<button class="button primary finish-workout" data-complete ${!canEdit || (!done && selected==='strength' && checked.length!==EXERCISES.length)?'disabled':''}>${icon(done?'check':'heart')}${done?'Gjennomført! Angre registrering':'Jeg er ferdig med økten'}${!done?icon('arrow'):''}</button>${selected==='strength'&&!done&&canEdit?'<p class="helper center">Kryss av øvelsene underveis. De strykes ut når de er gjort.</p>':''}`:'<div class="rest-note">'+icon('moon')+'Ingen økt å krysse av i dag. Nyt pausen ♡</div>'}`;
+  dialog.innerHTML = `<div class="dialog-header"><span class="eyebrow">${format(key,{weekday:'long', day:'numeric', month:'long'})}</span><button class="icon-button" data-close aria-label="Lukk økten">${icon('close')}</button></div><span class="dialog-activity-icon ${type.color}">${icon(type.icon)}</span><h2 id="dialog-title">${type.name}</h2><p class="dialog-caption">${type.caption}</p>${options(key).length > 1 ? `<div class="choice-label">Hva har du lyst til?</div><div class="choices" role="group" aria-label="Velg økt">${options(key).map(t=>`<button class="choice ${selected===t?'selected':''}" data-choice="${t}" ${done || !canPlan ? 'disabled':''}>${icon(TYPES[t].icon)}<span>${TYPES[t].name}${rec.type===t ? '<small>Anbefalt</small>':''}</span>${selected===t?icon('check'):''}</button>`).join('')}</div><p class="recommendation">${icon('sparkles')}${rec.reason}</p>`:''}<p class="workout-detail">${selected === 'strength' && strength.id === 'legacy' ? 'Denne økten var allerede påbegynt før programmet ble oppdatert. Avkryssingene dine er beholdt. Nye økter følger rotasjonen på 45–60 minutter.' : type.detail}</p>${selected === 'strength' && strength.id !== 'legacy' ? '<div class="training-guide"><strong>45–60 minutter · god flyt, gode pauser</strong><p>Hovedøvelse: 2–3 min pause. Tillegg: 60–90 sek. Du kan veksle mellom bryst og rygg og hvile omtrent 60 sek mellom øvelsene. Avslutt med 2 runder av de tre mageøvelsene, med 15–30 sek til å bytte og 45–60 sek mellom rundene. Bruk mer pause når teknikken trenger det.</p><p>Øktene følger A → B → C. En påbegynt økt beholder øvelsene sine; fremtidige forslag justeres etter hva du gjennomfører. Tiden er et anslag, inkludert oppvarming og bytte av apparater.</p></div>' : ''}${selected==='strength' ? `<div class="exercise-heading"><h3>${strength.name}</h3><span>${checked.length} av ${exercises.length} øvelser</span></div><div class="progress"><span style="width:${checked.length/exercises.length*100}%"></span></div><div class="exercise-list">${exercises.map((e,i)=>`<label class="exercise ${checked.includes(e.id)?'checked':''}"><input type="checkbox" data-exercise="${e.id}" ${checked.includes(e.id)?'checked':''} ${!canEdit?'disabled':''} /><span class="custom-check">${icon('check')}</span><span class="exercise-info"><strong>${e.name}</strong>${e.group ? `<small class="exercise-group">${e.group}</small>` : ''}<span>${e.note}</span></span><span class="sets">${e.sets}</span></label>`).join('')}</div>`:''}${!canEdit ? `<p class="notice">${key>dateKey()?'Du kan planlegge nå og krysse av når dagen kommer.':'Denne dagen er før du begynte å bruke appen.'}</p>` : ''}${selected !== 'rest' ? `<button class="button primary finish-workout" data-complete ${!canEdit || (!done && selected==='strength' && checked.length!==exercises.length)?'disabled':''}>${icon(done?'check':'heart')}${done?'Gjennomført! Angre registrering':'Jeg er ferdig med økten'}${!done?icon('arrow'):''}</button>${selected==='strength'&&!done&&canEdit?'<p class="helper center">Kryss av øvelsene underveis. De strykes ut når de er gjort.</p>':''}`:'<div class="rest-note">'+icon('moon')+'Ingen økt å krysse av i dag. Nyt pausen ♡</div>'}`;
   if (reopen && !dialog.open) { returnFocus = document.activeElement; dialog.showModal(); }
 }
 function closeDialog() { dialog.close(); activeDate = null; returnFocus?.focus(); }
@@ -106,11 +109,11 @@ document.addEventListener('click', event => {
   if (target.dataset.month) { month.setMonth(month.getMonth()+Number(target.dataset.month)); render(); }
   if (target.hasAttribute('data-calendar-today')) { month=new Date(parseDate(dateKey()).getFullYear(),parseDate(dateKey()).getMonth(),1,12); render(); }
   if (target.dataset.choice && activeDate && activeDate >= state.startDate && !state.days[activeDate]?.completed) {
-    const entry=dayEntry(activeDate); if (options(activeDate).includes(target.dataset.choice)) { entry.type=target.dataset.choice; entry.exercises=[]; save(); render(); workout(activeDate,false); }
+    const entry=dayEntry(activeDate); if (options(activeDate).includes(target.dataset.choice)) { if (entry.type === target.dataset.choice) return; entry.type=target.dataset.choice; entry.exercises=[]; delete entry.workoutId; if (entry.type === 'strength') entry.workoutId = strengthWorkout(activeDate, state).id; save(); render(); workout(activeDate,false); }
   }
   if (target.hasAttribute('data-complete') && activeDate && editable(activeDate)) {
-    const entry=dayEntry(activeDate);
-    if (entry.type==='rest' || (!entry.completed && entry.type==='strength' && entry.exercises.length!==EXERCISES.length)) return;
+    const entry=dayEntry(activeDate), exercises=strengthWorkout(activeDate,state).exercises;
+    if (entry.type==='rest' || (!entry.completed && entry.type==='strength' && entry.exercises.length!==exercises.length)) return;
     entry.completed=!entry.completed; save(); render(); workout(activeDate,false);
     toast(entry.completed?'En liten seier til deg. Så fint gjort, Ibeline! ♡':'Registreringen er angret.');
     if (entry.completed && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -126,7 +129,7 @@ document.addEventListener('click', event => {
 document.addEventListener('change', async event => {
   if (event.target.dataset.exercise && activeDate && editable(activeDate)) {
     const entry=dayEntry(activeDate), id=event.target.dataset.exercise;
-    if (entry.type!=='strength' || !EXERCISES.some(e=>e.id===id)) return;
+    if (entry.type!=='strength' || !strengthWorkout(activeDate,state).exercises.some(e=>e.id===id)) return;
     if (event.target.checked) entry.exercises=[...new Set([...entry.exercises,id])]; else { entry.exercises=entry.exercises.filter(e=>e!==id); entry.completed=false; }
     save(); render(); workout(activeDate,false); dialog.querySelector(`[data-exercise="${id}"]`)?.focus();
   }

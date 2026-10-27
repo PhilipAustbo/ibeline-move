@@ -55,12 +55,13 @@ test('backup-validering avviser feil dager, ugyldige øvelser og uferdig styrke'
   const s=make();s.claimed=['<script>'];assert.equal(validState(s),false);
   assert.equal(validState(make({'2026-10-21':done('strength',EXERCISES.map(e=>e.id))})),true);
 });
-test('alle nye økter har én hovedøvelse, to tillegg, bryst, rygg og tre mageøvelser', () => {
+test('alle nye økter har én hovedøvelse, to isolasjonsøvelser, bryst, rygg og tre mageøvelser', () => {
   for (const plan of STRENGTH_PLANS) {
     const s=make({'2026-10-21':{type:'strength',completed:false,exercises:[],workoutId:plan.id}});
     const workout=strengthWorkout('2026-10-21',s);
     const count=group=>workout.exercises.filter(e=>e.group.startsWith(group)).length;
-    assert.equal(count('Hovedøvelse'),1);assert.equal(count('Tillegg'),2);assert.equal(count('Overkropp · bryst'),1);
+    assert.equal(count('Hovedøvelse'),1);assert.ok([2,3].includes(count('Tillegg')));assert.equal(count('Overkropp · bryst'),1);
+    assert.equal(workout.exercises.filter(e=>['leg-curl','leg-extension','hip-abduction','kickback'].includes(e.id)).length,2);
     assert.ok([1,2].includes(count('Overkropp · rygg')));assert.equal(count('Mage'),3);
     assert.equal(new Set(workout.exercises.map(e=>e.id)).size,workout.exercises.length);
   }

@@ -38,7 +38,7 @@ export const STRENGTH_BANK = [
 export const STRENGTH_PLANS = [
   { id: 'strength-a-v1', name: 'Økt A · stødig & sterk', exerciseIds: ['squat','leg-curl','hip-abduction','chest-machine','pulldown','cable-row','leg-raise','dead-bug','pallof'] },
   { id: 'strength-b-v1', name: 'Økt B · kraft & kontroll', exerciseIds: ['hip-thrust','leg-extension','leg-curl','chest-machine','supported-row','reverse-crunch','side-plank','bird-dog'] },
-  { id: 'strength-c-v1', name: 'Økt C · balanse & bevegelse', exerciseIds: ['leg-press','lunge','kickback','chest-machine','pulldown','cable-row','leg-raise','plank','pallof'] }
+  { id: 'strength-c-v1', name: 'Økt C · balanse & bevegelse', exerciseIds: ['leg-press','lunge','leg-curl','kickback','chest-machine','pulldown','cable-row','leg-raise','plank','pallof'] }
 ];
 export function strengthWorkout(key, state, today = dateKey()) {
   const entry = state.days[key];

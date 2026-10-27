@@ -31,7 +31,7 @@ Styrkeopplegget og belønningsforslagene er utgangspunkter som kan endres i `pla
 
 ### Styrke · 45–60 minutter
 
-Tre økter roterer i rekkefølgen A → B → C. Hver har én hovedøvelse for bein, to tilleggsøvelser for bein, én brystøvelse, én–to ryggøvelser og tre mageøvelser. Banken inneholder 19 øvelser. A har knebøy som hovedøvelse, B hip thrust og C beinpress. Bakoverutfall er en tilleggsøvelse i C, ikke en isolasjonsøvelse. «Leg raise» betyr beinhev for mage; beinstrekk i maskin er en separat øvelse.
+Tre økter roterer i rekkefølgen A → B → C. Hver har én hovedøvelse for bein, to isolasjonsøvelser for bein, én brystøvelse, én–to ryggøvelser og tre mageøvelser. Banken inneholder 19 øvelser. A har knebøy som hovedøvelse, B hip thrust og C beinpress. Bakoverutfall er en ekstra tilleggsøvelse i C, ikke en isolasjonsøvelse. Øktene har henholdsvis 9, 8 og 10 øvelser; C er den lengste, nærmere 60 minutter. «Leg raise» betyr beinhev for mage; beinstrekk i maskin er en separat øvelse.
 
 5–8 minutter oppvarming og 1–2 lette oppvarmingssett før hovedøvelsen. Hovedøvelsen har tre arbeidssett og 2–3 minutter pause; tilleggsøvelser har to sett og 60–90 sekunder pause. Bryst og rygg kan veksles for å spare tid. Mageøktene gjøres som to runder med tre øvelser. Tiden er et anslag, inkludert oppvarming og apparatbytte. Belastningen tilpasses slik at 2–3 repetisjoner gjenstår med god teknikk. Når øvre repetisjonsantall nås i alle settene, foreslås minste økning i vekt ved neste økt. Appen registrerer foreløpig ikke vekter.
 
